@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+MIN_VOLUME = 0
+MAX_VOLUME = 100
+VOLUME_STEP = 5
+
+NOTIFICATION_SUMMARY_NORMAL = "Volume"
+NOTIFICATION_BODY_NORMAL = "{}%"
+NOTIFICATION_SUMMARY_MUTE = "Volume"
+NOTIFICATION_BODY_MUTE = "mute"
+
+NOTIFICATION_URGENCY = "low"
+NOTIFICATION_TIMEOUT = 1000
+
+NOTIFICATION_REPLACE_TAG = "osd"
+NOTIFICATION_REPLACE_ID = 22330
+NOTIFICATION_CATEGORY = "osd"
+
+ICONS = [
+    "audio-volume-low",
+    "audio-volume-medium",
+    "audio-volume-high"
+]
+ICON_MUTE = "audio-volume-muted"
+
+import subprocess
+import re
+from sys import argv
+
+def get_icon(volume : int, is_mute : bool) -> str:
+    if is_mute:
+        return ICON_MUTE
+    count = len(ICONS)
+    index = round((volume / 100) * (count - 1))
+    return ICONS[index]
+
+def volume_notify():
+    is_mute = get_mute()
+    volume = get_volume()
+    command = [
+        "notify-send",
+        "-h", "string:x-canonical-private-synchronous:" + NOTIFICATION_REPLACE_TAG,
+        "-c", NOTIFICATION_CATEGORY,
+        "-r", str(NOTIFICATION_REPLACE_ID),
+        "-u", NOTIFICATION_URGENCY,
+        "-t", str(NOTIFICATION_TIMEOUT),
+        "-i", get_icon(volume, is_mute)
+    ]
+    if is_mute:
+        command += [
+            NOTIFICATION_SUMMARY_MUTE.format(volume),
+            NOTIFICATION_BODY_MUTE.format(volume),
+        ]
+    else:
+        command += [
+            NOTIFICATION_SUMMARY_NORMAL.format(volume),
+            NOTIFICATION_BODY_NORMAL.format(volume),
+            "-h", "int:value:" + str(volume),
+        ]
+    subprocess.run(command)
+
+VOLUME_REGEX = "[0-9]+(?=%)"
+def get_volume() -> int:
+    result = subprocess.run(
+        [
+            "pactl",
+            "get-sink-volume",
+            "@DEFAULT_SINK@"
+        ],
+        stdout = subprocess.PIPE
+    ).stdout.decode()
+    str_volume = re.search(VOLUME_REGEX, result).group(0)
+    return int(str_volume)
+
+def set_volume(volume : int) -> None:
+    subprocess.run(
+        [
+            "pactl",
+            "set-sink-volume",
+            "@DEFAULT_SINK@",
+            str(volume) + "%"
+        ]
+    )
+
+IS_MUTE_REGEX = "yes"
+def get_mute() -> bool:
+    result = subprocess.run(
+        [
+            "pactl",
+            "get-sink-mute",
+            "@DEFAULT_SINK@"
+        ],
+        stdout = subprocess.PIPE
+    ).stdout.decode()
+    return re.search(IS_MUTE_REGEX, result) != None
+
+def set_mute(mute : bool) -> None:
+    subprocess.run(
+        [
+            "pactl",
+            "set-sink-mute",
+            "@DEFAULT_SINK@",
+            str(mute).lower()
+        ]
+    )
+
+def increase_volume(
+        step : int = VOLUME_STEP,
+        max_volume : int = MAX_VOLUME
+    ) -> None:
+    current_volume = get_volume()
+    new_volume = min(current_volume + step, max_volume)
+    set_volume(new_volume)
+
+def decrease_volume(
+        step : int = VOLUME_STEP,
+        min_volume : int = MIN_VOLUME
+    ) -> None:
+    current_volume = get_volume()
+    new_volume = max(current_volume - step, min_volume)
+    set_volume(new_volume)
+
+def toggle_mute():
+    set_mute(not get_mute())
+
+class Actions:
+    INCREASE = "up"
+    DECREASE = "down"
+    TOGGLE_MUTE = "mute"
+
+if __name__ == "__main__":
+    if (len(argv) >= 2):
+        match argv[1]:
+            case Actions.INCREASE:
+                set_mute(False)
+                increase_volume()
+                volume_notify()
+            case Actions.DECREASE:
+                set_mute(False)
+                decrease_volume()
+                volume_notify()
+            case Actions.TOGGLE_MUTE:
+                toggle_mute()
+                volume_notify()

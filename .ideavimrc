@@ -1,0 +1,14 @@
+nnoremap gr :action FindUsages<CR>
+nnoremap gi :action GotoImplementation<CR>
+nnoremap <space>rn :action RenameElement<CR>
+nnoremap <space>ra :action ShowIntentionActions<CR>
+nnoremap <space>rf :action ReformatCode<CR>
+nnoremap <space>rg :action OptimizeImports<CR>
+nnoremap <space>e :action ShowErrorDescription<CR>
+nnoremap <space>E :action ActivateProblemsViewToolWindow<CR>
+nnoremap <space>ff :action SearchEverywhere<CR>
+
+set ignorecase
+set smartcase
+set hls
+set incsearch

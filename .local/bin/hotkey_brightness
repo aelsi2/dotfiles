@@ -1,0 +1,193 @@
+#!/usr/bin/env python3
+MIN_VALUE = 10
+MAX_VALUE = 100
+VALUE_STEP = 10
+
+NOTIFICATION_SUMMARY_NORMAL = "Backlight"
+NOTIFICATION_BODY_NORMAL = "{}%"
+NOTIFICATION_SUMMARY_OFF = "Backlight"
+NOTIFICATION_BODY_OFF = "off"
+
+NOTIFICATION_URGENCY = "low"
+NOTIFICATION_TIMEOUT = 1000
+
+NOTIFICATION_REPLACE_TAG = "osd"
+NOTIFICATION_REPLACE_ID = 22330
+NOTIFICATION_CATEGORY = "osd"
+
+ICONS = [
+    "brightnesssettings"
+]
+ICON_OFF = "brightnesssettings"
+
+APP_NAME = "hotkey_brightness"
+
+# ===========================================
+
+import subprocess
+import re
+import os
+import fcntl
+import getpass
+from sys import argv
+
+def get_icon(value: int, is_off : bool) -> str:
+    if is_off:
+        return ICON_OFF
+    count = len(ICONS)
+    index = round((value/ 100) * (count - 1))
+    return ICONS[index]
+
+def notify():
+    is_off = get_off()
+    value = get_value()
+    command = [
+        "notify-send",
+        "-h", "string:x-canonical-private-synchronous:" + NOTIFICATION_REPLACE_TAG,
+        "-c", NOTIFICATION_CATEGORY,
+        "-r", str(NOTIFICATION_REPLACE_ID),
+        "-u", NOTIFICATION_URGENCY,
+        "-t", str(NOTIFICATION_TIMEOUT),
+        "-i", get_icon(value, is_off)
+    ]
+    if is_off:
+        command += [
+            NOTIFICATION_SUMMARY_OFF.format(value),
+            NOTIFICATION_BODY_OFF.format(value),
+        ]
+    else:
+        command += [
+            NOTIFICATION_SUMMARY_NORMAL.format(value),
+            NOTIFICATION_BODY_NORMAL.format(value),
+            "-h", "int:value:" + str(value),
+        ]
+    subprocess.run(command)
+
+def get_value() -> int:
+    value = subprocess.run(
+        [
+            "brightnessctl",
+            "get",
+            "-m"
+        ],
+        stdout = subprocess.PIPE
+    ).stdout.decode()
+    max_value = subprocess.run(
+        [
+            "brightnessctl",
+            "max",
+            "-m"
+        ],
+        stdout = subprocess.PIPE
+    ).stdout.decode()
+    return int(100 * int(value)/int(max_value))
+
+def set_value(value : int) -> None:
+    subprocess.run(
+        [
+            "brightnessctl",
+            "set",
+            str(value) + "%",
+            "-q"
+        ]
+    )
+
+def get_state_dir_path() -> str:
+    state_var = os.getenv("XDG_STATE_HOME")
+    if state_var == None:
+        home_path = None
+        home_var = os.getenv("HOME")
+        if home_var == None:
+            home_path = "/home/" + getpass.getuser()
+        else:
+            home_path = home_var 
+        return home_path + "/.local/state"
+    else:
+        return state_var
+
+STATE_DIR_PATH = get_state_dir_path() + "/" + APP_NAME
+STATE_FILE_PATH = STATE_DIR_PATH + "/state"
+LOCK_FILE_PATH = STATE_DIR_PATH + "/lock"
+
+def ensure_state_dir():
+    if not os.path.exists(STATE_DIR_PATH):
+        os.makedirs(STATE_DIR_PATH)
+
+def read_state() -> (bool, int):
+    is_off = False
+    last_value = 100
+    if os.path.exists(STATE_FILE_PATH):
+        try:
+            with open(STATE_FILE_PATH, "r") as file:
+                is_off = re.match("^\\s*[tT]rue\\s*$", file.readline())
+                last_value = int(file.readline())
+        except:
+            pass
+    return (is_off, last_value)
+
+def write_state(is_off : bool, last_value : int):
+    ensure_state_dir()
+    try:
+        with open(STATE_FILE_PATH, "w+") as file:
+            file.write(f"{is_off}\n{last_value}")
+    except:
+        pass
+
+def get_off() -> bool:
+    is_off, last_value = read_state()
+    return is_off
+
+def set_off(value : bool = None) -> None:
+    is_off, last_value = read_state()
+    if value == None:
+        value = not is_off
+    if is_off and not value:
+        set_value(last_value)
+    elif value and not is_off:
+        last_value = get_value()
+        set_value(0)
+    is_off = value
+    write_state(is_off, last_value)
+
+def increase_value(
+        step : int = VALUE_STEP,
+        max_value : int = MAX_VALUE
+    ) -> None:
+    current_value = get_value()
+    new_value = min(current_value + step, max_value)
+    set_value(new_value)
+
+def decrease_value(
+        step : int = VALUE_STEP,
+        min_value : int = MIN_VALUE
+    ) -> None:
+    current_value = get_value()
+    new_value = max(current_value - step, min_value)
+    set_value(new_value)
+
+class Actions:
+    INCREASE = "up"
+    DECREASE = "down"
+    TOGGLE_OFF = "off"
+
+if __name__ == "__main__":
+    ensure_state_dir()
+    try:
+        with open(LOCK_FILE_PATH, "w") as lock_file:
+            fcntl.lockf(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            if (len(argv) >= 2):
+                match argv[1]:
+                    case Actions.INCREASE:
+                        set_off(False)
+                        increase_value()
+                        notify()
+                    case Actions.DECREASE:
+                        set_off(False)
+                        decrease_value()
+                        notify()
+                    case Actions.TOGGLE_OFF:
+                        set_off(None)
+                        notify()
+    except:
+        pass
+

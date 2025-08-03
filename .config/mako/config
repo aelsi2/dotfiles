@@ -1,0 +1,20 @@
+layer=overlay
+default-timeout=5000
+
+border-size=2
+border-radius=5
+anchor=bottom-right
+outer-margin=10
+
+font=FiraCodeNerdFont 10
+icon-path=/usr/share/icons/Tela-circle-nord-dark
+background-color=#3b4252ff
+border-color=#4c566aff
+text-color=#d8dee9ff
+progress-color=source #4c566aff
+
+[urgency=normal]
+border-color=#81a1c1ff
+
+[urgency=high]
+border-color=#bf616aff
