@@ -34,7 +34,8 @@ require("lazy").setup {
     { "doums/darcula",            lazy = true, priority = 1000 },
     { "shaunsingh/nord.nvim",     lazy = true, priority = 1000 },
     { "stevearc/overseer.nvim", dependencies = { "nvim-telescope/telescope.nvim", "stevearc/dressing.nvim" } },
-    { "mfussenegger/nvim-dap" }
+    { "mfussenegger/nvim-dap" },
+    { "AlexeySachkov/llvm-vim" }
 }
 
 local telescope = require('telescope.builtin')
@@ -99,6 +100,9 @@ dap.configurations.c = {
         end,
     }
 }
+
+dap.configurations.cpp = dap.configurations.c
+dap.configurations.rust = dap.configurations.c
 
 vim.api.nvim_create_autocmd('LspAttach', {
     group = vim.api.nvim_create_augroup('UserLspConfig', {}),
