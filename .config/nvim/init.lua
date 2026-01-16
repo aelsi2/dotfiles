@@ -29,6 +29,7 @@ require("lazy").setup {
     { "neovim/nvim-lspconfig" },
     { "nvim-telescope/telescope.nvim", branch = "0.1.x", dependencies = { "nvim-lua/plenary.nvim" } },
     { "folke/trouble.nvim",       dependencies = { "nvim-tree/nvim-web-devicons" } },
+    { "folke/neoconf.nvim" },
     { "ms-jpq/coq-nvim", branch = "coq" },
     { "ms-jpq/coq.artifacts" },
     { "doums/darcula",            lazy = true, priority = 1000 },
@@ -40,15 +41,23 @@ require("lazy").setup {
 
 local telescope = require('telescope.builtin')
 local overseer = require('overseer')
-local lsp = require('lspconfig')
+local neoconf = require("neoconf")
 local coq = require('coq')
 local dap = require('dap')
 
+neoconf.setup()
 overseer.setup()
-lsp.rust_analyzer.setup(coq.lsp_ensure_capabilities())
-lsp.jedi_language_server.setup(coq.lsp_ensure_capabilities())
-lsp.clangd.setup(coq.lsp_ensure_capabilities())
-lsp.lua_ls.setup(coq.lsp_ensure_capabilities {
+
+vim.lsp.config('rust_analyzer', coq.lsp_ensure_capabilities())
+vim.lsp.enable('rust_analyzer')
+
+vim.lsp.config('jedi_language_server', coq.lsp_ensure_capabilities())
+vim.lsp.enable('jedi_language_server')
+
+vim.lsp.config('clangd', coq.lsp_ensure_capabilities())
+vim.lsp.enable('clangd')
+
+vim.lsp.config('lua_ls', coq.lsp_ensure_capabilities {
     on_init = function(client)
         if client.workspace_folders then
             local path = client.workspace_folders[1].name
@@ -72,8 +81,13 @@ lsp.lua_ls.setup(coq.lsp_ensure_capabilities {
         Lua = {}
     }
 })
-lsp.hls.setup(coq.lsp_ensure_capabilities())
-lsp.zls.setup(coq.lsp_ensure_capabilities())
+vim.lsp.enable('lua_ls')
+
+vim.lsp.config('hls', coq.lsp_ensure_capabilities())
+vim.lsp.enable('hls')
+
+vim.lsp.config('zls', coq.lsp_ensure_capabilities())
+vim.lsp.enable('zls')
 
 dap.adapters.gdb = {
   id = 'gdb',
