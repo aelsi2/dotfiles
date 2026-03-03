@@ -142,6 +142,11 @@ dap.configurations.rust = dap.configurations.c
 vim.api.nvim_create_autocmd('LspAttach', {
     group = vim.api.nvim_create_augroup('UserLspConfig', {}),
     callback = function(ev)
+        local client = vim.lsp.get_client_by_id(ev.data.client_id)
+        if not client then
+            return
+        end
+
         local opts = { buffer = ev.buf }
         vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
         vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
@@ -159,6 +164,11 @@ vim.api.nvim_create_autocmd('LspAttach', {
         vim.keymap.set('n', '<space>rf', function()
             vim.lsp.buf.format { async = true }
         end, opts)
+        if client.name == "clangd" then
+            vim.keymap.set('n', '<space>h', function()
+                vim.cmd('LspClangdSwitchSourceHeader')
+            end, opts)
+        end
     end,
 })
 
