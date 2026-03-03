@@ -27,14 +27,14 @@ vim.g.coq_settings = {
 -- Plugins
 require("lazy").setup {
     { "neovim/nvim-lspconfig" },
-    { "nvim-telescope/telescope.nvim", branch = "0.1.x", dependencies = { "nvim-lua/plenary.nvim" } },
-    { "folke/trouble.nvim",       dependencies = { "nvim-tree/nvim-web-devicons" } },
+    { "nvim-telescope/telescope.nvim", branch = "0.1.x",                                                            dependencies = { "nvim-lua/plenary.nvim" } },
+    { "folke/trouble.nvim",            dependencies = { "nvim-tree/nvim-web-devicons" } },
     { "folke/neoconf.nvim" },
-    { "ms-jpq/coq-nvim", branch = "coq" },
+    { "ms-jpq/coq-nvim",               branch = "coq" },
     { "ms-jpq/coq.artifacts" },
-    { "doums/darcula",            lazy = true, priority = 1000 },
-    { "shaunsingh/nord.nvim",     lazy = true, priority = 1000 },
-    { "stevearc/overseer.nvim", dependencies = { "nvim-telescope/telescope.nvim", "stevearc/dressing.nvim" } },
+    { "doums/darcula",                 lazy = true,                                                                 priority = 1000 },
+    { "shaunsingh/nord.nvim",          lazy = true,                                                                 priority = 1000 },
+    { "stevearc/overseer.nvim",        dependencies = { "nvim-telescope/telescope.nvim", "stevearc/dressing.nvim" } },
     { "mfussenegger/nvim-dap" },
     { "AlexeySachkov/llvm-vim" }
 }
@@ -56,6 +56,24 @@ vim.lsp.enable('jedi_language_server')
 
 vim.lsp.config('clangd', coq.lsp_ensure_capabilities())
 vim.lsp.enable('clangd')
+
+vim.lsp.config('arduino_language_server', coq.lsp_ensure_capabilities {
+    cmd = {
+        "arduino-language-server",
+        "-cli-config",
+        "sketch.yaml"
+    },
+    capabilities = {
+        textDocument = {
+            semanticTokens = vim.NIL
+        },
+        workspace = {
+            semanticTokens = vim.NIL
+        }
+    },
+    filetypes = { "arduino" }
+})
+vim.lsp.enable('arduino_language_server')
 
 vim.lsp.config('lua_ls', coq.lsp_ensure_capabilities {
     on_init = function(client)
@@ -89,11 +107,14 @@ vim.lsp.enable('hls')
 vim.lsp.config('zls', coq.lsp_ensure_capabilities())
 vim.lsp.enable('zls')
 
+vim.lsp.config('tblgen_lsp_server', coq.lsp_ensure_capabilities())
+vim.lsp.enable('tblgen_lsp_server')
+
 dap.adapters.gdb = {
-  id = 'gdb',
-  type = 'executable',
-  command = 'gdb',
-  args = { '--quiet', '--interpreter=dap' }
+    id = 'gdb',
+    type = 'executable',
+    command = 'gdb',
+    args = { '--quiet', '--interpreter=dap' }
 }
 
 dap.configurations.c = {
@@ -165,7 +186,7 @@ vim.keymap.set('n', '<space>si', dap.step_into)
 
 -- Options
 vim.opt.keymap = "russian-jcukenwin"
-vim.opt.fileencodings= 'utf8,cp1251'
+vim.opt.fileencodings = 'utf8,cp1251'
 vim.opt.iminsert = 0
 
 vim.opt.tabstop = 4
@@ -186,8 +207,7 @@ vim.opt.signcolumn = "yes"
 vim.g.nord_borders = true
 vim.g.nord_uniform_diff_background = true
 vim.cmd.colorscheme("nord")
-vim.api.nvim_set_hl(0, "WinSeparator", { fg="fg" })
-vim.fn.sign_define('DapBreakpoint',{ text ='●', texthl ='LspDiagnosticsSignError', linehl ='', numhl =''})
-vim.fn.sign_define('DapStopped',{ text ='→', texthl ='LspDiagnosticsSignWarning', linehl ='', numhl =''})
+vim.api.nvim_set_hl(0, "WinSeparator", { fg = "fg" })
+vim.fn.sign_define('DapBreakpoint', { text = '●', texthl = 'LspDiagnosticsSignError', linehl = '', numhl = '' })
+vim.fn.sign_define('DapStopped', { text = '→', texthl = 'LspDiagnosticsSignWarning', linehl = '', numhl = '' })
 vim.diagnostic.config { float = { border = "single" } }
-
