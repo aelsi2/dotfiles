@@ -17,4 +17,4 @@ end
 
 # Custom commands
 alias dotfiles="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
-alias ll="ls -lh --time-style=long-iso --color=always"
+alias ls="ls -lh --time-style=long-iso --color=always"
