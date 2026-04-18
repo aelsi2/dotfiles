@@ -48,6 +48,21 @@ local dap = require('dap')
 neoconf.setup()
 overseer.setup()
 
+vim.lsp.config('texlab', coq.lsp_ensure_capabilities {
+    settings = {
+        texlab = {
+            build = {
+                onSave = true,
+                args = { "-pdf", "-interaction=nonstopmode", "-synctex=1", "%f" },
+            },
+            chktex = {
+                onEdit = true
+            },
+        },
+    }
+})
+vim.lsp.enable('texlab')
+
 vim.lsp.config('rust_analyzer', coq.lsp_ensure_capabilities())
 vim.lsp.enable('rust_analyzer')
 
