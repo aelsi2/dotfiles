@@ -3,6 +3,8 @@ fish_add_path ~/go/bin
 fish_add_path ~/.cargo/bin
 fish_add_path ~/.local/bin
 fish_add_path ~/.ghcup/bin
+fish_add_path ~/.llvm-cdm/bin
+
 set -x EDITOR nvim
 set -x VISUAL nvim
 set -x PAGER less
