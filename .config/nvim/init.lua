@@ -13,7 +13,6 @@ vim.opt.rtp:prepend(lazypath)
 -------------------------------------------------------------
 -- LSP
 vim.g.coq_settings = {
-    auto_start = 'shut-up',
     clients = {
         snippets = {
             weight_adjust = -1
@@ -34,21 +33,18 @@ require("lazy").setup {
     { "ms-jpq/coq.artifacts" },
     { "doums/darcula",                 lazy = true,                                                                 priority = 1000 },
     { "shaunsingh/nord.nvim",          lazy = true,                                                                 priority = 1000 },
-    { "stevearc/overseer.nvim",        dependencies = { "nvim-telescope/telescope.nvim", "stevearc/dressing.nvim" } },
     { "mfussenegger/nvim-dap" },
     { "AlexeySachkov/llvm-vim" }
 }
 
 local telescope = require('telescope.builtin')
-local overseer = require('overseer')
 local neoconf = require("neoconf")
-local coq = require('coq')
+local _ = require('coq')
 local dap = require('dap')
 
 neoconf.setup()
-overseer.setup()
 
-vim.lsp.config('texlab', coq.lsp_ensure_capabilities {
+vim.lsp.config('texlab', {
     settings = {
         texlab = {
             build = {
@@ -61,18 +57,8 @@ vim.lsp.config('texlab', coq.lsp_ensure_capabilities {
         },
     }
 })
-vim.lsp.enable('texlab')
 
-vim.lsp.config('rust_analyzer', coq.lsp_ensure_capabilities())
-vim.lsp.enable('rust_analyzer')
-
-vim.lsp.config('jedi_language_server', coq.lsp_ensure_capabilities())
-vim.lsp.enable('jedi_language_server')
-
-vim.lsp.config('clangd', coq.lsp_ensure_capabilities())
-vim.lsp.enable('clangd')
-
-vim.lsp.config('arduino_language_server', coq.lsp_ensure_capabilities {
+vim.lsp.config('arduino_language_server', {
     cmd = {
         "arduino-language-server",
         "-cli-config",
@@ -88,9 +74,8 @@ vim.lsp.config('arduino_language_server', coq.lsp_ensure_capabilities {
     },
     filetypes = { "arduino" }
 })
-vim.lsp.enable('arduino_language_server')
 
-vim.lsp.config('lua_ls', coq.lsp_ensure_capabilities {
+vim.lsp.config('lua_ls', {
     on_init = function(client)
         if client.workspace_folders then
             local path = client.workspace_folders[1].name
@@ -109,20 +94,17 @@ vim.lsp.config('lua_ls', coq.lsp_ensure_capabilities {
                 }
             }
         })
-    end,
-    settings = {
-        Lua = {}
-    }
+    end
 })
+
+vim.lsp.enable('texlab')
+vim.lsp.enable('rust_analyzer')
+vim.lsp.enable('jedi_language_server')
+vim.lsp.enable('clangd')
+vim.lsp.enable('arduino_language_server')
 vim.lsp.enable('lua_ls')
-
-vim.lsp.config('hls', coq.lsp_ensure_capabilities())
 vim.lsp.enable('hls')
-
-vim.lsp.config('zls', coq.lsp_ensure_capabilities())
 vim.lsp.enable('zls')
-
-vim.lsp.config('tblgen_lsp_server', coq.lsp_ensure_capabilities())
 vim.lsp.enable('tblgen_lsp_server')
 
 dap.adapters.gdb = {
@@ -195,14 +177,6 @@ vim.keymap.set('n', ']d', function() vim.diagnostic.jump { count = 1 } end)
 vim.keymap.set('n', '<space>ff', telescope.find_files, { desc = 'Telescope find files' })
 vim.keymap.set('n', '<space>fb', telescope.buffers, { desc = 'Telescope buffers' })
 
-vim.keymap.set('n', '<space>o', function()
-    overseer.run_template({}, function(task, _)
-        if task then
-            overseer.open()
-        end
-    end)
-end, { desc = 'Overseer run' })
-
 vim.keymap.set('n', '<space>b', dap.toggle_breakpoint)
 vim.keymap.set('n', '<space>c', dap.continue)
 vim.keymap.set('n', '<space>n', dap.step_over)
@@ -225,8 +199,6 @@ vim.opt.number = true
 vim.opt.so = 5
 vim.opt.numberwidth = 2
 vim.opt.signcolumn = "yes"
-
---vim.opt.laststatus = 3
 
 -- Appearance
 vim.g.nord_borders = true
