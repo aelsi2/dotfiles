@@ -1,17 +1,4 @@
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.uv.fs_stat(lazypath) then
-    vim.fn.system({
-        "git",
-        "clone",
-        "--filter=blob:none",
-        "https://github.com/folke/lazy.nvim.git",
-        "--branch=stable", -- latest stable release
-        lazypath,
-    })
-end
-vim.opt.rtp:prepend(lazypath)
--------------------------------------------------------------
--- LSP
+-- COQ settings
 vim.g.coq_settings = {
     clients = {
         snippets = {
@@ -24,26 +11,27 @@ vim.g.coq_settings = {
 }
 
 -- Plugins
-require("lazy").setup {
-    { "neovim/nvim-lspconfig" },
-    { "nvim-telescope/telescope.nvim", branch = "0.1.x",                                                            dependencies = { "nvim-lua/plenary.nvim" } },
-    { "folke/trouble.nvim",            dependencies = { "nvim-tree/nvim-web-devicons" } },
-    { "folke/neoconf.nvim" },
-    { "ms-jpq/coq-nvim",               branch = "coq" },
-    { "ms-jpq/coq.artifacts" },
-    { "doums/darcula",                 lazy = true,                                                                 priority = 1000 },
-    { "shaunsingh/nord.nvim",          lazy = true,                                                                 priority = 1000 },
-    { "mfussenegger/nvim-dap" },
-    { "AlexeySachkov/llvm-vim" }
-}
+vim.pack.add({
+    { src = 'https://github.com/neovim/nvim-lspconfig' },
+    { src = 'https://github.com/nvim-lua/plenary.nvim' },
+    { src = 'https://github.com/nvim-telescope/telescope.nvim', version = '0.1.x' },
+    { src = 'https://github.com/nvim-tree/nvim-web-devicons' },
+    { src = 'https://github.com/folke/trouble.nvim' },
+    { src = 'https://github.com/folke/neoconf.nvim' },
+    { src = 'https://github.com/ms-jpq/coq-nvim', version='coq' },
+    { src = 'https://github.com/ms-jpq/coq.artifacts' },
+    { src = 'https://github.com/shaunsingh/nord.nvim' },
+    { src = 'https://github.com/mfussenegger/nvim-dap' },
+    { src = 'https://github.com/AlexeySachkov/llvm-vim' },
+})
 
 local telescope = require('telescope.builtin')
 local neoconf = require("neoconf")
-local _ = require('coq')
 local dap = require('dap')
 
 neoconf.setup()
 
+-- LSP
 vim.lsp.config('texlab', {
     settings = {
         texlab = {
@@ -107,6 +95,7 @@ vim.lsp.enable('hls')
 vim.lsp.enable('zls')
 vim.lsp.enable('tblgen_lsp_server')
 
+-- DAP
 dap.adapters.gdb = {
     id = 'gdb',
     type = 'executable',
@@ -136,6 +125,7 @@ dap.configurations.c = {
 dap.configurations.cpp = dap.configurations.c
 dap.configurations.rust = dap.configurations.c
 
+-- Keymap
 vim.api.nvim_create_autocmd('LspAttach', {
     group = vim.api.nvim_create_augroup('UserLspConfig', {}),
     callback = function(ev)
