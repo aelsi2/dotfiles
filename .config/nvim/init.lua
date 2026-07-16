@@ -12,6 +12,7 @@ vim.g.coq_settings = {
 
 -- Plugins
 vim.pack.add({
+    { src = 'https://github.com/stevearc/dressing.nvim' },
     { src = 'https://github.com/neovim/nvim-lspconfig' },
     { src = 'https://github.com/nvim-lua/plenary.nvim' },
     { src = 'https://github.com/nvim-telescope/telescope.nvim', version = '0.1.x' },
