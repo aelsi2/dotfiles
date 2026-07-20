@@ -1,5 +1,7 @@
 -- COQ settings
+vim.g.coq_v1 = true
 vim.g.coq_settings = {
+    auto_start = 'shut-up',
     clients = {
         snippets = {
             weight_adjust = -1
@@ -7,6 +9,10 @@ vim.g.coq_settings = {
         buffers = {
             weight_adjust = -2
         }
+    },
+    limits = {
+        completion_auto_timeout = 0,
+        completion_manual_timeout = 0,
     }
 }
 
@@ -29,11 +35,12 @@ vim.pack.add({
 local telescope = require('telescope.builtin')
 local neoconf = require("neoconf")
 local dap = require('dap')
+local coq = require('coq')
 
 neoconf.setup()
 
 -- LSP
-vim.lsp.config('texlab', {
+vim.lsp.config('texlab', coq.lsp_ensure_capabilities({
     settings = {
         texlab = {
             build = {
@@ -45,9 +52,9 @@ vim.lsp.config('texlab', {
             },
         },
     }
-})
+}))
 
-vim.lsp.config('arduino_language_server', {
+vim.lsp.config('arduino_language_server', coq.lsp_ensure_capabilities({
     cmd = {
         "arduino-language-server",
         "-cli-config",
@@ -62,9 +69,9 @@ vim.lsp.config('arduino_language_server', {
         }
     },
     filetypes = { "arduino" }
-})
+}))
 
-vim.lsp.config('lua_ls', {
+vim.lsp.config('lua_ls', coq.lsp_ensure_capabilities({
     on_init = function(client)
         if client.workspace_folders then
             local path = client.workspace_folders[1].name
@@ -84,7 +91,14 @@ vim.lsp.config('lua_ls', {
             }
         })
     end
-})
+}))
+
+vim.lsp.config('rust_analyzer', coq.lsp_ensure_capabilities({}))
+vim.lsp.config('jedi_language_server', coq.lsp_ensure_capabilities({}))
+vim.lsp.config('clangd', coq.lsp_ensure_capabilities({}))
+vim.lsp.config('hls', coq.lsp_ensure_capabilities({}))
+vim.lsp.config('zls', coq.lsp_ensure_capabilities({}))
+vim.lsp.config('tblgen_lsp_server', coq.lsp_ensure_capabilities({}))
 
 vim.lsp.enable('texlab')
 vim.lsp.enable('rust_analyzer')
