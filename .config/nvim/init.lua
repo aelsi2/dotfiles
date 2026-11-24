@@ -109,6 +109,7 @@ vim.lsp.enable('lua_ls')
 vim.lsp.enable('hls')
 vim.lsp.enable('zls')
 vim.lsp.enable('tblgen_lsp_server')
+vim.lsp.enable('ts_ls')
 
 -- DAP
 dap.adapters.gdb = {
