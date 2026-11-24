@@ -25,7 +25,7 @@ vim.pack.add({
     { src = 'https://github.com/nvim-tree/nvim-web-devicons' },
     { src = 'https://github.com/folke/trouble.nvim' },
     { src = 'https://github.com/folke/neoconf.nvim' },
-    { src = 'https://github.com/ms-jpq/coq-nvim', version='coq' },
+    { src = 'https://github.com/ms-jpq/coq-nvim',               version = 'coq' },
     { src = 'https://github.com/ms-jpq/coq.artifacts' },
     { src = 'https://github.com/shaunsingh/nord.nvim' },
     { src = 'https://github.com/mfussenegger/nvim-dap' },
@@ -172,6 +172,21 @@ vim.api.nvim_create_autocmd('LspAttach', {
             end, opts)
         end
     end,
+})
+
+vim.api.nvim_create_user_command("MakeIncludeGuard", function(opts)
+    local arg = opts.args
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    vim.api.nvim_win_set_cursor(0, { 1, 1 })
+    vim.api.nvim_put({'#ifndef ' .. arg, '#define ' .. arg}, 'l', false, false)
+    local last_row = vim.api.nvim_buf_line_count(0)
+    vim.api.nvim_win_set_cursor(0, { last_row, 1 })
+    vim.cmd("undojoin")
+    vim.api.nvim_put({'#endif // ' .. arg }, 'l', true, false)
+    vim.api.nvim_win_set_cursor(0, { cursor[1] + 2, cursor[2] })
+end, {
+    nargs = 1,
+    desc = "Add an include guard to the current file",
 })
 
 vim.keymap.set('n', '<space>e', vim.diagnostic.open_float)
